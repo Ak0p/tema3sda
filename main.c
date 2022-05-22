@@ -184,6 +184,67 @@ TADir cd(TADir curr_dir, char *nume) {
   return GetDPos(curr_dir->dirs, nume);
 }
 
+TADir find_dir(TADir nod, TADir mark, char *nume) {
+  if (!nod) return NULL;
+  // printf(">>>D %s %s\n", nod->nume, nume);
+  if (strcmp(nod->nume, nume) == 0) {
+    mark = nod;
+    return mark;
+  }
+  mark = find_dir(nod->st, mark, nume);
+  if (mark) return mark;
+  mark = find_dir(nod->dr, mark, nume);
+  if (mark) return mark;
+  mark = find_dir(nod->dirs, mark, nume);
+  return mark;
+}
+
+TADir find_file(TADir nod, TADir mark, char *nume) {
+  if (!nod) return NULL;
+  // printf(">>>F %s %s\n", nod->nume, nume);
+  if (Is_File(nod->files, nume)) {
+    mark = nod;
+    // printf("FUNCTIE %s\n", mark->nume);
+    return mark;
+  }
+  mark = find_file(nod->st, mark, nume);
+  if (mark) {
+    // printf(">>>1F %s %s\n", nod->nume, nume);
+    return mark;
+  }
+  mark = find_file(nod->dr, mark, nume);
+  if (mark) {
+    // printf(">>>2F %s %s\n", nod->nume, nume);
+    return mark;
+  }
+  mark = find_file(nod->dirs, mark, nume);
+  // printf(">>>3F %s %s\n", nod->nume, nume);
+  return mark;
+}
+
+// void find(TADir root, char *nume, char mode, char cond) {
+//   if (!root) return;
+//   if (cond == 1) return;
+//   switch (mode) {
+//     case 'd': {
+//       if (!root->dirs) {
+//         find(root, nume, mode, 1);
+//       }
+//       TADir ponteir = GetDPos(root->dirs, nume);
+//       if (ponteir) {
+//         cond = 1;
+//         pwd(ponteir);
+//       }
+//       break;
+//     }
+//     case 'f': {
+//       break;
+//     }
+//     default:
+//       printf("Mod de cautare invalid\n");
+//   }
+// }
+
 int main() {
   TADir root = InitD();
   TADir curr_dir = root;
@@ -264,6 +325,51 @@ int main() {
     }
 
     if (strcmp(word[0], "find") == 0) {
+      TADir mark = NULL;
+      switch (word[1][1]) {
+        case 'f': {
+          mark = find_file(root, mark, word[2]);
+          break;
+        }
+        case 'd': {
+          mark = find_dir(root, mark, word[2]);
+          break;
+        }
+        default:
+          printf("Mod invalid de utilizare\n");
+      }
+      if (mark) {
+        switch (word[1][1]) {
+          case 'f': {
+            printf("File %s found!\n", word[2]);
+            pwd(mark);
+            printf("\n");
+            break;
+          }
+          case 'd': {
+            printf("Directory %s found!\n", word[2]);
+            pwd(mark);
+            printf("\n");
+            break;
+          }
+        }
+
+      }
+
+      else {
+        switch (word[1][1]) {
+          case 'f': {
+            printf("File %s not found!\n", word[2]);
+            break;
+          }
+          case 'd': {
+            printf("Directory %s not found!\n", word[2]);
+            break;
+          }
+          default:
+            printf("Mod invalid de utilizare\n");
+        }
+      }
     }
 
     if (strcmp(word[0], "quit") == 0) {
