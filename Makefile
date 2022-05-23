@@ -1,19 +1,8 @@
-CC=gcc
-CFLAGS=-Wextra -g
-OBJ=main.o tarb.o auxarb.o
-TARGET=lab8
+build: main.c tarb.c tarb.h
+	gcc -o tema3 main.c tarb.c tarb.h
 
-build: $(TARGET)
+run: tema3
+	./tema3
 
-$(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $(TARGET)
-
-run:
-	./$(TARGET)
-
-clean:
-	rm -f *.o $(TARGET) *~
-
-valgrind:
-	valgrind --leak-check=yes --track-origins=yes ./$(TARGET)
-
+clean: tema3
+	rm -f tema3

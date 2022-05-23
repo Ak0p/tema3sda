@@ -1,0 +1,39 @@
+/*BĂROIU Andrei - 312CB */
+
+
+README
+
+
+tarb.c
+
+>ConstrDir && ConstrFisier initializeaza nodul director sau fisier
+>IsFile && IsDir, primind nodul radacina si numele, verifica daca exista
+ in arbore un nod cu numele respectiv
+ >insert_Dir && insert_Fisier insereaza un nod in arbore
+ >GetDPos && GetFPos intorc un pointer la nodul cu numele cautat
+ >GetFMin && GetDMin intorc minimul din arbore
+
+ main.c
+
+ >InitD initializeaza sistemul de fisiere cu nodul root
+ >touch insereaza un fisier cu numele primit in directorul curent
+ >mkdir asemenea lui touch doar ca pentru directoare
+ >ls afiseaza elementele din arborii dirs si files ai directorului curent
+ >rm && rmdir functioneaza la fel: caut elementul cu numele primit ca parametru.
+ Daca nodul este cel cautat verific cati copii are acesta. In cazul in care are
+ un singur copil, acel copil ia locul nodului sters. In cazul in care are doi
+ copii, caut urmatorul element in ordine(deci minimul subarborelui din dreapta
+ - il voi numi next),
+ dupa care inlocuiesc informatia nodului care trebuie sters cu informatia
+ nodului next si apelez iar functia pentru next, stergand astfel aparitia
+ initiaza a acestei informatii din nodul next, care acum se afla pe pozitia
+ nodului sters.
+ >pwd verifica daca directorul parinte este nul recursiv. Cand este null
+ se intoarce return iar la fiecare apel ramas se afiseaza in ordine numele
+ directorului.
+ >cd modifica valoarea variabilei din main curr_dir folosind functia GetDPos
+ pe arborele de subdirectoare al curr_dir
+ >find cauta incepand cu directorul root elementul (fie el director sau fisier)
+ folosind dfs srd numele in arborii de subdirectoare. In cazul in care
+ pointerul mark exista inseamna ca a fost gasit un nod acelasi nume  pe care
+ functia l-a primit ca parametru.

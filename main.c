@@ -1,48 +1,48 @@
+/*BĂROIU Andrei - 312CB*/
+
 #include "tarb.h"
 #define wordSize 50
 #define lineSize 100
 #define words 10
 
+TADir InitD() { /* initializare arbore */
+  TADir dir = (TADir)calloc(1, sizeof(TDir));
+  char *nume = (char *)calloc(5, sizeof(char));
+  strcat(nume, "root");
+  dir->nume = nume;
+  return dir;
+}
+
 void touch(TADir *actDir, char *nume) {
-  // printf ("touch\n");
-  TAFile *p = &((*actDir)->files);  // TAFile *p =&((*actDir->files));  ASA
-  if (Is_Dir(((*actDir)->dirs), nume) == 1) {
+  TAFile *p = &((*actDir)->files);
+  if (IsDir(((*actDir)->dirs), nume) == 1) {
     printf("Directory %s already exists!\n", nume);
     return;
   }
   int ret_val = insert_Fisier(p, nume, *actDir);
-  // printf ("rv %d\n", ret_val);
   switch (ret_val) {
     case 1:
-      // printf("Siuii\n");
       return;
     case 0:
       printf("File %s already exists!\n", nume);
       return;
   }
-  // printf ("Aici\n");
 }
 
 void mkdir(TADir *actDir, char *nume) {
   TADir *p = &((*actDir)->dirs);
-  // printf ("%s\n", nume);
-  if (Is_File(((*actDir)->files), nume) == 1) {
+  if (IsFile(((*actDir)->files), nume) == 1) {
     printf("File %s already exists!\n", nume);
     return;
   }
-
   int ret_val = insert_Dir(p, nume, *actDir);
-  // printf ("rv %d\n", ret_val);
-
   switch (ret_val) {
     case 1:
-      // printf("Siuii\n");
       return;
     case 0:
       printf("Directory %s already exists!\n", nume);
       return;
   }
-  //  printf ("Aci\n");
 }
 
 void Afi_Dir(TADir dir) {
@@ -58,118 +58,87 @@ void Afi_Fisier(TAFile file) {
 }
 
 void ls(TADir dir) {
-  // if (!(dir->dirs->dr) && !(dir->dirs->st) && !(dir->files->st) &&
-  // !(dir->files->dr)) {
-  //   printf("\n");
-  //   return;
-  // }
   if (dir->dirs) {
-    // printf("DA dir\n");
     Afi_Dir(dir->dirs);
   }
 
   if (dir->files) {
-    // printf("DA files\n");
     Afi_Fisier(dir->files);
   }
 
   printf("\n");
 }
 
-TADir InitD() /* initializare arbore */
-{
-  TADir dir = (TADir)calloc(1, sizeof(TDir));
-  char *nume = (char *)calloc(5, sizeof(char));
-  strcat(nume, "root");
-  dir->nume = nume;
-  return dir;
-}
-
 TAFile rm(TAFile fisier, char *nume) {
   if (!fisier) return NULL;
-  if (strcmp(fisier->nume, nume) > 0)
-    fisier->st = rm(fisier->st, nume);
-  else if (strcmp(fisier->nume, nume) < 0)
-    fisier->dr = rm(fisier->dr, nume);
-  else {
+  TAFile aux = fisier;
+  if (strcmp(fisier->nume, nume) == 0) {
     if (!(fisier->dr) && !(fisier->st)) {
-      // printf("1\n");
       free(fisier->nume);
       free(fisier);
       fisier = NULL;
-
     } else if (!(fisier->dr) && (fisier->st)) {
-      // printf("2\n");
-      TAFile aux = fisier;
       fisier = fisier->st;
       free(aux->nume);
       free(aux);
-
     } else if ((fisier->dr) && !(fisier->st)) {
-      // printf("3\n");
-      TAFile aux = fisier;
       fisier = fisier->dr;
       free(aux->nume);
       free(aux);
-
     } else {
-      // printf("4\n");
-      TAFile aux = GetFMin(fisier->dr);
-      // printf("aux %s||fisier %s\n", aux->nume, fisier->nume);
+      aux = GetFMin(fisier->dr);
       free(fisier->nume);
       fisier->nume = (char *)calloc(strlen(aux->nume) + 1, sizeof(char));
-      strcpy(fisier->nume, aux->nume);
-      // printf("aux %s||fisier %s\n", aux->nume, fisier->nume);
+      memcpy(fisier->nume, aux->nume, strlen(aux->nume) + 1);
       fisier->dr = rm(fisier->dr, aux->nume);
     }
+  } else if (strcmp(fisier->nume, nume) < 0) {
+    fisier->dr = rm(fisier->dr, nume);
+  } else {
+    fisier->st = rm(fisier->st, nume);
   }
+  aux = NULL;
   return fisier;
 }
+
 TADir rmdir(TADir dir, char *nume) {
   if (!dir) return NULL;
-  if (strcmp(dir->nume, nume) > 0)
-    dir->st = rmdir(dir->st, nume);
-  else if (strcmp(dir->nume, nume) < 0)
-    dir->dr = rmdir(dir->dr, nume);
-  else {
+  TADir aux = dir;
+  if (strcmp(dir->nume, nume) == 0) {
     if (!(dir->dr) && !(dir->st)) {
-      // printf("1\n");
       free(dir->nume);
       free(dir);
       dir = NULL;
-
     } else if (!(dir->dr) && (dir->st)) {
-      // printf("2\n");
-      TADir aux = dir;
       dir = dir->st;
       free(aux->nume);
       free(aux);
-
     } else if ((dir->dr) && !(dir->st)) {
-      // printf("3\n");
-      TADir aux = dir;
       dir = dir->dr;
       free(aux->nume);
       free(aux);
-
     } else {
-      // printf("4\n");
-      TADir aux = GetDMin(dir->dr);
-      // printf("aux %s||fisier %s\n", aux->nume, fisier->nume);
+      aux = GetDMin(dir->dr);
       free(dir->nume);
       dir->nume = (char *)calloc(strlen(aux->nume) + 1, sizeof(char));
       strcpy(dir->nume, aux->nume);
-      // printf("aux %s||fisier %s\n", aux->nume, fisier->nume);
       dir->dr = rmdir(dir->dr, aux->nume);
     }
+  } else if (strcmp(dir->nume, nume) < 0)
+    dir->dr = rmdir(dir->dr, nume);
+  else {
+    dir->st = rmdir(dir->st, nume);
   }
   return dir;
 }
 
 void pwd(TADir curr_dir) {
-  if (!curr_dir) return;
-  pwd(curr_dir->parinte);
-  printf("/%s", curr_dir->nume);
+  if (!curr_dir)
+    return;
+  else {
+    pwd(curr_dir->parinte);
+    printf("/%s", curr_dir->nume);
+  }
 }
 
 TADir cd(TADir curr_dir, char *nume) {
@@ -177,73 +146,48 @@ TADir cd(TADir curr_dir, char *nume) {
     if (curr_dir->parinte != NULL) return curr_dir->parinte;
     return curr_dir;
   }
-  if (Is_Dir(curr_dir->dirs, nume) == 0) {
+  if (IsDir(curr_dir->dirs, nume) == 0) {
     printf("Directory not found!\n");
     return curr_dir;
   }
   return GetDPos(curr_dir->dirs, nume);
 }
 
-TADir find_dir(TADir nod, TADir mark, char *nume) {
+TADir find(TADir nod, TADir mark, char *nume, char mod) {
   if (!nod) return NULL;
   // printf(">>>D %s %s\n", nod->nume, nume);
-  if (strcmp(nod->nume, nume) == 0) {
-    mark = nod;
-    return mark;
+  switch (mod) {
+    case 'd': {
+      if (strcmp(nod->nume, nume) == 0) {
+        mark = nod;
+        return mark;
+      }
+      mark = find(nod->st, mark, nume, mod);
+      if (mark) return mark;
+      mark = find(nod->dr, mark, nume, mod);
+      if (mark) return mark;
+      mark = find(nod->dirs, mark, nume, mod);
+      return mark;
+    }
+    case 'f': {
+      if (IsFile(nod->files, nume)) {
+        mark = nod;
+        return mark;
+      }
+      mark = find(nod->st, mark, nume, mod);
+      if (mark) {
+        return mark;
+      }
+      mark = find(nod->dr, mark, nume, mod);
+      if (mark) {
+        return mark;
+      }
+      mark = find(nod->dirs, mark, nume, mod);
+      return mark;
+    }
   }
-  mark = find_dir(nod->st, mark, nume);
-  if (mark) return mark;
-  mark = find_dir(nod->dr, mark, nume);
-  if (mark) return mark;
-  mark = find_dir(nod->dirs, mark, nume);
-  return mark;
+  return NULL;
 }
-
-TADir find_file(TADir nod, TADir mark, char *nume) {
-  if (!nod) return NULL;
-  // printf(">>>F %s %s\n", nod->nume, nume);
-  if (Is_File(nod->files, nume)) {
-    mark = nod;
-    // printf("FUNCTIE %s\n", mark->nume);
-    return mark;
-  }
-  mark = find_file(nod->st, mark, nume);
-  if (mark) {
-    // printf(">>>1F %s %s\n", nod->nume, nume);
-    return mark;
-  }
-  mark = find_file(nod->dr, mark, nume);
-  if (mark) {
-    // printf(">>>2F %s %s\n", nod->nume, nume);
-    return mark;
-  }
-  mark = find_file(nod->dirs, mark, nume);
-  // printf(">>>3F %s %s\n", nod->nume, nume);
-  return mark;
-}
-
-// void find(TADir root, char *nume, char mode, char cond) {
-//   if (!root) return;
-//   if (cond == 1) return;
-//   switch (mode) {
-//     case 'd': {
-//       if (!root->dirs) {
-//         find(root, nume, mode, 1);
-//       }
-//       TADir ponteir = GetDPos(root->dirs, nume);
-//       if (ponteir) {
-//         cond = 1;
-//         pwd(ponteir);
-//       }
-//       break;
-//     }
-//     case 'f': {
-//       break;
-//     }
-//     default:
-//       printf("Mod de cautare invalid\n");
-//   }
-// }
 
 int main() {
   TADir root = InitD();
@@ -264,23 +208,19 @@ int main() {
 
     word[wordCount] = strtok(line, " ");
     while (word[wordCount]) {
-      // printf("%s\n", word[wordCount]);
       wordCount++;
       word[wordCount] = strtok(NULL, " ");
     }
 
     if (strcmp(word[0], "touch") == 0) {
-      // printf("TOUCH %s\n", word[1]);
       touch(&curr_dir, word[1]);
     }
 
     if (strcmp(word[0], "mkdir") == 0) {
-      // printf("MKDIR %s\n", word[1]);
       mkdir(&curr_dir, word[1]);
     }
 
     if (strcmp(word[0], "ls") == 0) {
-      // printf("LS\n");
       ls(curr_dir);
     }
 
@@ -289,12 +229,10 @@ int main() {
         printf("File %s doesn't exist!\n", word[1]);
         continue;
       }
-      if (Is_File(curr_dir->files, word[1]) == 0) {
+      if (IsFile(curr_dir->files, word[1]) == 0) {
         printf("File %s doesn't exist!\n", word[1]);
         continue;
       }
-      // printf("RM %s\n", word[1]);
-
       curr_dir->files = rm(curr_dir->files, word[1]);
     }
 
@@ -303,7 +241,7 @@ int main() {
         printf("Directory %s doesn't exist!\n", word[1]);
         continue;
       }
-      if (Is_Dir(curr_dir->dirs, word[1]) == 0) {
+      if (IsDir(curr_dir->dirs, word[1]) == 0) {
         printf("Directory %s doesn't exist!\n", word[1]);
         continue;
       }
@@ -312,48 +250,31 @@ int main() {
     }
 
     if (strcmp(word[0], "cd") == 0) {
-      // printf("root: %s|curr: %s\n", root->nume, curr_dir->nume);
       curr_dir = cd(curr_dir, word[1]);
-      // printf("\nroot: %s|curr: %s\n", root->nume, curr_dir->nume);
     }
 
     if (strcmp(word[0], "pwd") == 0) {
-      // printf("root: %s|curr: %s\n", root->nume, curr_dir->nume);
       pwd(curr_dir);
-      // printf("\nroot: %s|curr: %s\n", root->nume, curr_dir->nume);
       printf("\n");
     }
 
     if (strcmp(word[0], "find") == 0) {
       TADir mark = NULL;
-      switch (word[1][1]) {
-        case 'f': {
-          mark = find_file(root, mark, word[2]);
-          break;
-        }
-        case 'd': {
-          mark = find_dir(root, mark, word[2]);
-          break;
-        }
-        default:
-          printf("Mod invalid de utilizare\n");
-      }
+
+      mark = find(root, mark, word[2], word[1][1]);
       if (mark) {
         switch (word[1][1]) {
           case 'f': {
             printf("File %s found!\n", word[2]);
-            pwd(mark);
-            printf("\n");
             break;
           }
           case 'd': {
             printf("Directory %s found!\n", word[2]);
-            pwd(mark);
-            printf("\n");
             break;
           }
         }
-
+        pwd(mark);
+        printf("\n");
       }
 
       else {
@@ -373,7 +294,8 @@ int main() {
     }
 
     if (strcmp(word[0], "quit") == 0) {
-      // dealloc
+      free(root->nume);
+      free(root);
       free(word);
       free(line);
       return 0;
@@ -382,4 +304,5 @@ int main() {
     free(word);
     free(line);
   }
+  return 0;
 }
